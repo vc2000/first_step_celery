@@ -1,11 +1,24 @@
 from flask import Flask
 from celery import Celery
-import celeryconfig 
-import config
-from tasks.test import *
+
+try:
+    import celeryconfig
+    import config
+    from tasks.test import *
+except Exception:
+    pass
+
+try:
+    from . import celeryconfig
+    from . import config
+    from .tasks.test import *
+except Exception:
+    pass
+
+
 
 app = Flask(__name__)
-app.config.from_object('config')
+app.config.from_object(config)
 
 
 def make_celery(app):
@@ -15,7 +28,7 @@ def make_celery(app):
         broker=app.config['BROKER_URL']
     )
     celery.conf.update(app.config)
-    celery.config_from_object(celeryconfig)
+    # celery.config_from_object(celeryconfig)
     TaskBase = celery.Task
 
     class ContextTask(TaskBase):
